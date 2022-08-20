@@ -11,10 +11,12 @@ const PORT = process.env.PORT || 3000
 const postRoute = require('./routes/postRoute')
 
 dotenv.config()
+
 app.use(cors())
 app.use(morgan('dev'))
 app.use(express.urlencoded({extended: true}))
 app.use(express.json())
+app.use('/public', express.static("public")); 
 
 mongoose.connect(process.env.DB_CONNECTION_URL, () => console.log("Database Connected..."))
 
