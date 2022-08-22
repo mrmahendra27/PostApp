@@ -9,6 +9,7 @@ const app = express()
 const PORT = process.env.PORT || 3000
 
 const postRoute = require('./routes/postRoute')
+const authRoute = require('./routes/authRoute')
 
 dotenv.config()
 
@@ -24,3 +25,4 @@ app.listen(PORT, () => console.log(`Server started on port ${PORT}.`))
 
 app.get('/', (req, res) => res.send('Hello world1'))
 app.use('/post', postRoute)
+app.use('/user', authRoute)

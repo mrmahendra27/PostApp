@@ -1,12 +1,12 @@
 const Post = require("../models/Post");
 
-const index = async (req, res, next) => {
-  await Post.find()
+const index = (req, res, next) => {
+  Post.find()
     .then((response) => res.json({ response }))
     .catch((error) => res.json({ error }));
 };
 
-const store = async (req, res, next) => {
+const store = (req, res, next) => {
   const newPost = new Post({
     title: req.body.title,
     sub_title: req.body.sub_title,
@@ -22,7 +22,7 @@ const store = async (req, res, next) => {
     path = path.substring(0, path.lastIndexOf(","))
     newPost.image = path;
   }
-  await newPost
+  newPost
     .save()
     .then((response) =>
       res.json({
@@ -33,9 +33,9 @@ const store = async (req, res, next) => {
     .catch((error) => res.json({ error }));
 };
 
-const show = async (req, res, next) => {
+const show = (req, res, next) => {
   const postId = req.params.postId;
-  await Post.findById(postId)
+  Post.findById(postId)
     .then((response) =>
       response
         ? res.json({ response })
@@ -44,7 +44,7 @@ const show = async (req, res, next) => {
     .catch((error) => res.json({ error }));
 };
 
-const update = async (req, res, next) => {
+const update = (req, res, next) => {
   const postId = req.params.postId;
   if (!req.body) {
     return res.status(400).send({
@@ -66,7 +66,8 @@ const update = async (req, res, next) => {
     path = path.substring(0, path.lastIndexOf(","))
     updatePost.image = path;
   }
-  await Post.findByIdAndUpdate(postId, updatePost, { useFindAndModify: false })
+  console.log(updatePost)
+  Post.findByIdAndUpdate(postId, updatePost, { useFindAndModify: false })
     .then((response) =>
       res.json({
         message: "Post has been updated.",
@@ -76,9 +77,9 @@ const update = async (req, res, next) => {
     .catch((error) => res.json({ error }));
 };
 
-const destroy = async (req, res, next) => {
+const destroy = (req, res, next) => {
   const postId = req.params.postId;
-  await Post.findByIdAndRemove(postId)
+  Post.findByIdAndRemove(postId)
     .then((response) =>
       res.json({
         message: "Post has been deleted.",
