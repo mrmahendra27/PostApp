@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 3000
 
 const postRoute = require('./routes/postRoute')
 const authRoute = require('./routes/authRoute')
+const authenticate = require('./middleware/authenticate')
 
 dotenv.config()
 
@@ -24,5 +25,5 @@ mongoose.connect(process.env.DB_CONNECTION_URL, () => console.log("Database Conn
 app.listen(PORT, () => console.log(`Server started on port ${PORT}.`))
 
 app.get('/', (req, res) => res.send('Hello world1'))
-app.use('/post', postRoute)
+app.use('/post', authenticate, postRoute)
 app.use('/user', authRoute)
