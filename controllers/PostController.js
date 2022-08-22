@@ -1,7 +1,7 @@
 const Post = require("../models/Post");
 
 const index = async (req, res, next) => {
-  await Post.find({ author:req.user._id })
+  await Post.find({ author: req.user._id })
     .populate("author")
     .then((response) => res.json({ response }))
     .catch((error) => res.json({ error }));
@@ -46,6 +46,34 @@ const show = async (req, res, next) => {
     .catch((error) => res.json({ error }));
 };
 
+// const update = async (req, res, next) => {
+//   try {
+//     const postId = req.params.postId;
+//     if (!req.body) {
+//       return res.status(400).send({
+//         message: "Data to cannot be empty!",
+//       });
+//     }
+//     const user = User.findOne()
+//     const updatePost = {
+//       title: req.body.title,
+//       sub_title: req.body.sub_title,
+//       summary: req.body.summary,
+//       description: req.body.description,
+//     };
+//     if (req.files) {
+//       let path = "";
+//       req.files.forEach((files, index, arr) => {
+//         path = path + files.path + ",";
+//       });
+//       path = path.substring(0, path.lastIndexOf(","));
+//       updatePost.image = path;
+//     }
+//   } catch (error) {
+//     res.json({ error });
+//   }
+// };
+
 const update = async (req, res, next) => {
   const postId = req.params.postId;
   if (!req.body) {
@@ -67,13 +95,23 @@ const update = async (req, res, next) => {
     path = path.substring(0, path.lastIndexOf(","));
     updatePost.image = path;
   }
-  await Post.findByIdAndUpdate(postId, updatePost, { useFindAndModify: false })
-    .then((response) =>
-      res.json({
-        message: "Post has been updated.",
-        data: response,
-      })
-    )
+  await Post.findOneAndUpdate(
+    { _id: postId, author: req.user.id },
+    updatePost,
+    { useFindAndModify: false }
+  )
+    .then((response) => {
+      if (response) {
+        res.json({
+          message: "Post has been updated.",
+          data: response,
+        });
+      } else {
+        res.json({
+          message: "Post not found.",
+        });
+      }
+    })
     .catch((error) => res.json({ error }));
 };
 
