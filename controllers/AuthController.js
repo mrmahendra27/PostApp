@@ -42,25 +42,27 @@ const register = (req, res, next) => {
   });
 };
 
-const login = async (req, res, next) => {
-  await User.findOne(req.body.email)
-    .then((user) => {
+const login = (req, res, next) => {
+  User.findOne({email: req.body.username})
+    .then(user => {
+      console.log(user)
       const checkUser = bcrypt.compare(req.body.password, user.password);
       if (checkUser) {
         token = jwt.sign(
-          { userId: user.id, email: user.email },
+          { name: user.name, email: user.email },
           process.env.SECRET_KEY,
           { expiresIn: "1h" }
         );
         res.json({
           message: "Logged in successfully..!",
-          token: token,
+          token,
         });
       }
     })
     .catch((error) => {
+      console.log(error)
       res.json({
-        message: error,
+        message: "No users found.!",
       });
     });
 };
