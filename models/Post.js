@@ -15,10 +15,8 @@ const postSchema = new Schema({
         max: 100
     },
     author: {
-        type: String,
-        required: false,
-        min: 3,
-        max: 50
+        type: Schema.Types.ObjectId,
+        ref: "User"
     },
     summary: {
         type: String,

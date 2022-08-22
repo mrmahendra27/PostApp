@@ -1,7 +1,8 @@
 const Post = require("../models/Post");
 
 const index = async (req, res, next) => {
-  await Post.find()
+  await Post.find({ author:req.user._id })
+    .populate("author")
     .then((response) => res.json({ response }))
     .catch((error) => res.json({ error }));
 };
@@ -10,16 +11,16 @@ const store = async (req, res, next) => {
   const newPost = new Post({
     title: req.body.title,
     sub_title: req.body.sub_title,
-    author: req.body.author,
+    author: req.user._id,
     summary: req.body.summary,
     description: req.body.description,
   });
   if (req.files) {
-    let path = ''
+    let path = "";
     req.files.forEach((files, index, arr) => {
-        path = path + files.path + ','
+      path = path + files.path + ",";
     });
-    path = path.substring(0, path.lastIndexOf(","))
+    path = path.substring(0, path.lastIndexOf(","));
     newPost.image = path;
   }
   await newPost
@@ -36,6 +37,7 @@ const store = async (req, res, next) => {
 const show = async (req, res, next) => {
   const postId = req.params.postId;
   await Post.findById(postId)
+    .populate("author")
     .then((response) =>
       response
         ? res.json({ response })
@@ -54,16 +56,15 @@ const update = async (req, res, next) => {
   const updatePost = {
     title: req.body.title,
     sub_title: req.body.sub_title,
-    author: req.body.author,
     summary: req.body.summary,
     description: req.body.description,
   };
   if (req.files) {
-    let path = ''
+    let path = "";
     req.files.forEach((files, index, arr) => {
-        path = path + files.path + ','
+      path = path + files.path + ",";
     });
-    path = path.substring(0, path.lastIndexOf(","))
+    path = path.substring(0, path.lastIndexOf(","));
     updatePost.image = path;
   }
   await Post.findByIdAndUpdate(postId, updatePost, { useFindAndModify: false })

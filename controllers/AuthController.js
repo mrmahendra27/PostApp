@@ -2,6 +2,15 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+const index = async (req, res, next) => {
+  await User.find()
+    .populate("posts")
+    .then((response) => {
+      res.json({ response });
+    })
+    .catch((error) => res.json({ error }));
+};
+
 const register = (req, res, next) => {
   if (req.body.password != req.body.confirm_password) {
     return res.json({
@@ -14,27 +23,31 @@ const register = (req, res, next) => {
         error: err,
       });
     }
-    let token = jwt.sign(
-      { name: req.body.name, email: req.body.email },
-      process.env.SECRET_KEY,
-      { expiresIn: "1h" }
-    );
+
     let user = new User({
       name: req.body.name,
       email: req.body.email,
       mobile: req.body.mobile,
       password: hashedPass,
-      token: token,
     });
     user
       .save()
-      .then((response) => {
+      .then((user) => {
+        let token = jwt.sign(
+          { id: user.id, name: req.body.name, email: req.body.email },
+          process.env.SECRET_KEY,
+          { expiresIn: "1h" }
+        );
+        user.token = token;
+        user.save();
+
         res.json({
           message: "Registered successfully..!",
-          token: response.token,
+          token,
         });
       })
       .catch((error) => {
+        console.log(error);
         res.json({
           message: error,
         });
@@ -43,24 +56,34 @@ const register = (req, res, next) => {
 };
 
 const login = (req, res, next) => {
-  User.findOne({email: req.body.username})
-    .then(user => {
-      console.log(user)
-      const checkUser = bcrypt.compare(req.body.password, user.password);
-      if (checkUser) {
-        token = jwt.sign(
-          { name: user.name, email: user.email },
-          process.env.SECRET_KEY,
-          { expiresIn: "1h" }
-        );
-        res.json({
-          message: "Logged in successfully..!",
-          token,
-        });
-      }
+  User.findOne({ email: req.body.username })
+    .then((user) => {
+      const checkUser = bcrypt.compare(
+        req.body.password,
+        user.password,
+        (err, result) => {
+          if (result) {
+            token = jwt.sign(
+              { id: user.id, name: user.name, email: user.email },
+              process.env.SECRET_KEY,
+              { expiresIn: "1h" }
+            );
+            user.token = token;
+            user.save();
+            res.json({
+              message: "Logged in successfully..!",
+              token,
+            });
+          } else {
+            res.json({
+              message: "Wrong Credentails.!",
+            });
+          }
+        }
+      );
     })
     .catch((error) => {
-      console.log(error)
+      console.log(error);
       res.json({
         message: "No users found.!",
       });
@@ -68,6 +91,7 @@ const login = (req, res, next) => {
 };
 
 module.exports = {
+  index,
   register,
   login,
 };
